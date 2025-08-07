@@ -1,0 +1,28 @@
+/*
+ * config.hh
+ *
+ * Copyright (c) 2025 Dalton Messmer <messmer.dalton/at/gmail.com>
+ * This file is part of the BufferThief library.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
+#ifndef BUFFER_THIEF_CONFIG_H
+#define BUFFER_THIEF_CONFIG_H
+
+#cmakedefine01 BT_USE_UNSTABLE_STEAL
+
+namespace bt {
+
+constexpr auto using_unstable_steal() -> bool
+{
+	return static_cast<bool>(BT_USE_UNSTABLE_STEAL);
+}
+
+} // namespace bt
+
+#endif // BUFFER_THIEF_CONFIG_H
