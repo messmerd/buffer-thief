@@ -41,6 +41,9 @@ target_sources(
 )
 
 target_compile_features(bufferthief INTERFACE cxx_std_17)
+if(MSVC)
+	target_compile_options(bufferthief INTERFACE /Zc:__cplusplus)
+endif()
 if(BT_COPY_BUFFERS)
 	target_compile_definitions(bufferthief INTERFACE BT_COPY_BUFFERS)
 endif()
