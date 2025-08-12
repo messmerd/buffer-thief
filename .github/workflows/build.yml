@@ -6,20 +6,47 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build_type: [Debug, Release]
         include:
-          - os: ubuntu-latest
+          - name: "Linux / libstdc++ (Debug)"
+            os: ubuntu-latest
             cpp_compiler: g++
             c_compiler: gcc
-          - os: ubuntu-latest
+            build_type: Debug
+          - name: "Linux / libstdc++ (Release)"
+            os: ubuntu-latest
+            cpp_compiler: g++
+            c_compiler: gcc
+            build_type: Release
+          - name: "Linux / libc++ (Debug)"
+            os: ubuntu-latest
             cpp_compiler: clang++
             c_compiler: clang
-          - os: macos-latest
+            build_type: Debug
+          - name: "Linux / libc++ (Release)"
+            os: ubuntu-latest
             cpp_compiler: clang++
             c_compiler: clang
-          - os: windows-latest
+            build_type: Release
+          - name: "macOS / libc++ (Debug)"
+            os: macos-latest
+            cpp_compiler: clang++
+            c_compiler: clang
+            build_type: Debug
+          - name: "macOS / libc++ (Release)"
+            os: macos-latest
+            cpp_compiler: clang++
+            c_compiler: clang
+            build_type: Release
+          - name: "Windows / MSVC STL (Debug)"
+            os: windows-latest
             cpp_compiler: cl
             c_compiler: cl
+            build_type: Debug
+          - name: "Windows / MSVC STL (Release)"
+            os: windows-latest
+            cpp_compiler: cl
+            c_compiler: cl
+            build_type: Release
     steps:
     - uses: actions/checkout@v4
     - name: Setup
