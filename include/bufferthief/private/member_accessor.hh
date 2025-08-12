@@ -56,6 +56,11 @@ public:
 	{
 		return (obj .* ... .* member_ptrs);
 	}
+
+	friend constexpr auto get(Tag, const ClassType& obj) -> const MemberType&
+	{
+		return (obj .* ... .* member_ptrs);
+	}
 };
 
 } // namespace bt::detail

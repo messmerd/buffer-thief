@@ -13,7 +13,7 @@
 
 #ifndef BUFFER_THIEF_STRING_IMPLEMENTED
 
-#include <string>
+#include "common_string.hh"
 
 #if defined(_MSC_VER)
 #define BUFFER_THIEF_STRING_IMPLEMENTED
@@ -42,10 +42,13 @@ template struct MemberAccessor<Target<char32_t>, &std::u32string::_Mypair>;
 
 //! Does not include null terminator
 template<typename CharT>
-inline constexpr auto kSmallStringMaxSize = std::size_t{Target<CharT>::Data::_BUF_SIZE - 1};
+constexpr auto small_string_max_size() noexcept -> std::size_t
+{
+	return Target<CharT>::Data::_BUF_SIZE - 1;
+}
 
 template<typename CharT>
-constexpr auto steal_impl(std::basic_string<CharT>&& input) noexcept -> CharT*
+BT_STRING_CONSTEXPR20 auto try_steal(std::basic_string<CharT>&& input) noexcept -> CharT*
 {
 	using Data = Target<CharT>::Data;
 	using Member = Target<CharT>::Member;
@@ -54,8 +57,7 @@ constexpr auto steal_impl(std::basic_string<CharT>&& input) noexcept -> CharT*
 	Data& data = internal._Myval2;
 
 	// See _Large_mode_engaged() or _Large_string_engaged()
-	if (data._Myres < Data::_BUF_SIZE)
-	{
+	if (data._Myres < Data::_BUF_SIZE) {
 		// Small string
 		return nullptr;
 	}
@@ -70,6 +72,12 @@ constexpr auto steal_impl(std::basic_string<CharT>&& input) noexcept -> CharT*
 	input.clear(); // ???
 
 	return ptr;
+}
+
+template<typename CharT>
+BT_STRING_CONSTEXPR20 auto uses_large_buffer(const std::basic_string<CharT>& input) noexcept -> bool
+{
+	return input.capacity() >= Target<CharT>::Data::_BUF_SIZE;
 }
 
 } // namespace bt::detail

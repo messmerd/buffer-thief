@@ -13,7 +13,7 @@
 
 #ifndef BUFFER_THIEF_STRING_IMPLEMENTED
 
-#include <string>
+#include "common_string.hh"
 
 #if defined(__GLIBCXX__)
 #define BUFFER_THIEF_STRING_IMPLEMENTED
@@ -28,7 +28,10 @@ namespace bt::detail {
 
 //! Does not include null terminator
 template<typename CharT>
-inline constexpr auto kSmallStringMaxSize = std::size_t{15 / sizeof(CharT)};
+constexpr auto small_string_max_size() noexcept -> std::size_t
+{
+	return 15 / sizeof(CharT);
+}
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnon-template-friend"
@@ -37,13 +40,17 @@ template<typename CharT>
 struct PointerTarget
 {
 	friend constexpr auto get(PointerTarget, std::basic_string<CharT>&) -> CharT*&;
+	friend constexpr auto get(PointerTarget, const std::basic_string<CharT>&) -> CharT* const&;
 };
 
 template<typename CharT>
 struct LocalPointerTarget
 {
-	using type = CharT(&)[kSmallStringMaxSize<CharT> + 1];
-	friend constexpr auto get(LocalPointerTarget, std::basic_string<CharT>&) -> type;
+	using Type = CharT(&)[small_string_max_size<CharT>() + 1];
+	using ConstType = const CharT(&)[small_string_max_size<CharT>() + 1];
+
+	friend constexpr auto get(LocalPointerTarget, std::basic_string<CharT>&) -> Type;
+	friend constexpr auto get(LocalPointerTarget, const std::basic_string<CharT>&) -> ConstType;
 };
 
 #pragma GCC diagnostic pop
@@ -65,13 +72,12 @@ template struct MemberAccessor<LocalPointerTarget<char16_t>, &std::u16string::_M
 template struct MemberAccessor<LocalPointerTarget<char32_t>, &std::u32string::_M_local_buf>;
 
 template<typename CharT>
-constexpr auto steal_impl(std::basic_string<CharT>&& input) noexcept -> CharT*
+BT_STRING_CONSTEXPR20 auto try_steal(std::basic_string<CharT>&& input) noexcept -> CharT*
 {
 	CharT*& internal_ptr = get(PointerTarget<CharT>{}, input);
 	CharT* local_buffer_ptr = get(LocalPointerTarget<CharT>{}, input);
 
-	if (internal_ptr == local_buffer_ptr)
-	{
+	if (internal_ptr == local_buffer_ptr) {
 		// Small string
 		return nullptr;
 	}
@@ -83,6 +89,14 @@ constexpr auto steal_impl(std::basic_string<CharT>&& input) noexcept -> CharT*
 	input.clear(); // ???
 
 	return ptr;
+}
+
+template<typename CharT>
+BT_STRING_CONSTEXPR20 auto uses_large_buffer(const std::basic_string<CharT>& input) noexcept -> bool
+{
+	const CharT* internal_ptr = get(PointerTarget<CharT>{}, input);
+	const CharT* local_buffer_ptr = get(LocalPointerTarget<CharT>{}, input);
+	return internal_ptr != local_buffer_ptr;
 }
 
 } // namespace bt::detail

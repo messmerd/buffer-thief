@@ -8,24 +8,21 @@ project(
 )
 
 option(
-	BT_USE_UNSTABLE_STEAL
-	"Use standard library implementation details to steal internal buffers rather than simply copying them"
-	ON
+	BT_COPY_BUFFERS
+	"Disables stealing of internal buffers and simply copies them instead - meant for performance testing"
+	OFF
 )
 
-option(BT_BUILD_TESTS "Build BufferThief unit tests" OFF)
+option(
+	BT_BUILD_TESTS
+	"Build BufferThief unit tests"
+	OFF
+)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_library(bufferthief INTERFACE)
 add_library(messmerd::bufferthief ALIAS bufferthief)
-
-target_compile_features(bufferthief INTERFACE cxx_std_17)
-
-configure_file(
-	"${CMAKE_CURRENT_SOURCE_DIR}/include/bufferthief/config.hh.in"
-	"${CMAKE_CURRENT_BINARY_DIR}/include/bufferthief/config.hh"
-)
 
 target_sources(
 	bufferthief
@@ -33,15 +30,20 @@ target_sources(
 	FILE_SET HEADERS
 	BASE_DIRS
 		${CMAKE_CURRENT_SOURCE_DIR}/include
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
 	FILES
+		include/bufferthief/private/common_string.hh
+		include/bufferthief/private/common_vector.hh
 		include/bufferthief/private/member_accessor.hh
 		include/bufferthief/private/string_libstdc++.hh
 		include/bufferthief/private/string_msvc_stl.hh
 		include/bufferthief/string.hh
 		include/bufferthief/vector.hh
-		${CMAKE_CURRENT_BINARY_DIR}/include/bufferthief/config.hh
 )
+
+target_compile_features(bufferthief INTERFACE cxx_std_17)
+if(BT_COPY_BUFFERS)
+	target_compile_definitions(bufferthief INTERFACE BT_COPY_BUFFERS)
+endif()
 
 install(
 	TARGETS bufferthief

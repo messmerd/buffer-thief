@@ -20,7 +20,9 @@
 #include <type_traits>
 #include <utility>
 
-static_assert(bt::using_unstable_steal(), "bufferthief must be configured with -DBT_USE_UNSTABLE_STEAL=1");
+#if defined(BT_COPY_BUFFERS)
+#	error "BufferThief must not be configured with BT_COPY_BUFFERS for these tests"
+#endif
 
 namespace {
 
@@ -95,51 +97,87 @@ void operator delete(void* p) noexcept
 
 ///////////////////////////////////////////////////
 
-TEST_F(StringTest, CharEmpty)
+TEST_F(StringTest, StealCharEmpty)
 {
 	auto s1 = bt::steal(generateString<char>(0));
 	EXPECT_NE(s1.get(), nullptr);
 	EXPECT_EQ(s1[0], '\0');
 	EXPECT_EQ(allocations_, 1);
 	EXPECT_EQ(deallocations_, 0);
-}
 
-TEST_F(StringTest, CharSmall)
-{
-	{
-		auto s2 = bt::steal(generateString<char>(3));
-		EXPECT_NE(s2.get(), nullptr);
-		EXPECT_EQ(std::char_traits<char>::length(s2.get()), 3);
-		EXPECT_EQ(std::char_traits<char>::compare(s2.get(), "abc", 3), 0);
-	}
-	EXPECT_EQ(allocations_, 1);
-	EXPECT_EQ(deallocations_, 1);
-}
-
-TEST_F(StringTest, CharSmallMax)
-{
-	auto s3 = bt::steal(generateString<char>(bt::detail::kSmallStringMaxSize<char>));
-	EXPECT_NE(s3.get(), nullptr);
-	EXPECT_EQ(std::char_traits<char>::length(s3.get()), bt::detail::kSmallStringMaxSize<char>);
-	EXPECT_EQ(allocations_, 1);
-	EXPECT_EQ(deallocations_, 0);
-}
-
-TEST_F(StringTest, CharLongMin)
-{
-	auto s4 = bt::steal(generateString<char>(bt::detail::kSmallStringMaxSize<char> + 1));
-	EXPECT_NE(s4.get(), nullptr);
-	EXPECT_EQ(std::char_traits<char>::length(s4.get()), bt::detail::kSmallStringMaxSize<char> + 1);
+	auto s2 = generateString<char>(0);
+	EXPECT_EQ(bt::uses_large_buffer(s2), false);
+	EXPECT_EQ(bt::try_steal(std::move(s2)), nullptr);
 	EXPECT_EQ(allocations_, 0);
 	EXPECT_EQ(deallocations_, 0);
 }
 
-TEST_F(StringTest, CharLongMin2)
+TEST_F(StringTest, StealCharSmall)
 {
 	{
-		auto s5 = bt::steal(generateString<char>(bt::detail::kSmallStringMaxSize<char> + 1));
-		EXPECT_NE(s5.get(), nullptr);
-		EXPECT_EQ(std::char_traits<char>::length(s5.get()), bt::detail::kSmallStringMaxSize<char> + 1);
+		auto s1 = bt::steal(generateString<char>(3));
+		EXPECT_NE(s1.get(), nullptr);
+		EXPECT_EQ(std::char_traits<char>::length(s1.get()), 3);
+		EXPECT_EQ(std::char_traits<char>::compare(s1.get(), "abc", 3), 0);
+	}
+	EXPECT_EQ(allocations_, 1);
+	EXPECT_EQ(deallocations_, 1);
+
+	{
+		auto s2 = generateString<char>(3);
+		EXPECT_EQ(bt::uses_large_buffer(s2), false);
+		EXPECT_EQ(bt::try_steal(std::move(s2)), nullptr);
+	}
+	EXPECT_EQ(allocations_, 0);
+	EXPECT_EQ(deallocations_, 0);
+}
+
+TEST_F(StringTest, StealCharSmallMax)
+{
+	auto s1 = bt::steal(generateString<char>(bt::small_string_max_size<char>()));
+	EXPECT_NE(s1.get(), nullptr);
+	EXPECT_EQ(std::char_traits<char>::length(s1.get()), bt::small_string_max_size<char>());
+	EXPECT_EQ(allocations_, 1);
+	EXPECT_EQ(deallocations_, 0);
+
+	auto s2 = generateString<char>(bt::small_string_max_size<char>());
+	EXPECT_EQ(bt::uses_large_buffer(s2), false);
+	EXPECT_EQ(bt::try_steal(std::move(s2)), nullptr);
+	EXPECT_EQ(allocations_, 0);
+	EXPECT_EQ(deallocations_, 0);
+}
+
+TEST_F(StringTest, StealCharLongMin)
+{
+	auto s1 = bt::steal(generateString<char>(bt::small_string_max_size<char>() + 1));
+	EXPECT_NE(s1.get(), nullptr);
+	EXPECT_EQ(std::char_traits<char>::length(s1.get()), bt::small_string_max_size<char>() + 1);
+	EXPECT_EQ(allocations_, 0);
+	EXPECT_EQ(deallocations_, 0);
+
+	auto s2 = generateString<char>(bt::small_string_max_size<char>() + 1);
+	EXPECT_EQ(bt::uses_large_buffer(s2), true);
+	auto s3 = bt::try_steal(std::move(s2));
+	EXPECT_NE(s3, nullptr);
+	EXPECT_EQ(allocations_, 0);
+	EXPECT_EQ(deallocations_, 0);
+}
+
+TEST_F(StringTest, StealCharLongMin2)
+{
+	{
+		auto s1 = bt::steal(generateString<char>(bt::small_string_max_size<char>() + 1));
+		EXPECT_NE(s1.get(), nullptr);
+		EXPECT_EQ(std::char_traits<char>::length(s1.get()), bt::small_string_max_size<char>() + 1);
+	}
+	EXPECT_EQ(allocations_, 0);
+	EXPECT_EQ(deallocations_, 1);
+
+	{
+		auto s2 = generateString<char>(bt::small_string_max_size<char>() + 1);
+		EXPECT_EQ(bt::uses_large_buffer(s2), true);
+		auto s3 = bt::try_steal(std::move(s2));
+		EXPECT_NE(s3, nullptr);
 	}
 	EXPECT_EQ(allocations_, 0);
 	EXPECT_EQ(deallocations_, 1);
