@@ -25,7 +25,7 @@ namespace bt::detail {
 template<typename CharT>
 struct Target
 {
-	using Alloc = std::_Rebind_alloc_t<typename String::allocator_type, CharT>;
+	using Alloc = std::_Rebind_alloc_t<typename std::basic_string<CharT>::allocator_type, CharT>;
 	using Data = std::_String_val<std::_Simple_types<CharT>>;
 	using Member = std::_Compressed_pair<Alloc, Data>;
 
