@@ -62,8 +62,6 @@ jobs:
         else
           echo "stdlib-flag=" >> "$GITHUB_OUTPUT"
         fi
-    - name: Clang setup
-      if: 
     - name: Configure
       run: >
         cmake
