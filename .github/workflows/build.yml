@@ -12,49 +12,41 @@ jobs:
             cpp_compiler: g++
             c_compiler: gcc
             build_type: Debug
-            stdlib_flag: ""
           - name: "Linux / libstdc++ (Release)"
             os: ubuntu-latest
             cpp_compiler: g++
             c_compiler: gcc
             build_type: Release
-            stdlib_flag: ""
           - name: "Linux / libc++ (Debug)"
             os: ubuntu-latest
             cpp_compiler: clang++
             c_compiler: clang
             build_type: Debug
-            stdlib_flag: "-stdlib=libc++"
           - name: "Linux / libc++ (Release)"
             os: ubuntu-latest
             cpp_compiler: clang++
             c_compiler: clang
             build_type: Release
-            stdlib_flag: "-stdlib=libc++"
           - name: "macOS / libc++ (Debug)"
             os: macos-latest
             cpp_compiler: clang++
             c_compiler: clang
             build_type: Debug
-            stdlib_flag: ""
           - name: "macOS / libc++ (Release)"
             os: macos-latest
             cpp_compiler: clang++
             c_compiler: clang
             build_type: Release
-            stdlib_flag: ""
           - name: "Windows / MSVC STL (Debug)"
             os: windows-latest
             cpp_compiler: cl
             c_compiler: cl
             build_type: Debug
-            stdlib_flag: ""
           - name: "Windows / MSVC STL (Release)"
             os: windows-latest
             cpp_compiler: cl
             c_compiler: cl
             build_type: Release
-            stdlib_flag: ""
     steps:
     - uses: actions/checkout@v4
     - name: Setup
@@ -62,6 +54,16 @@ jobs:
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        if [[ "${{ matrix.c_compiler }}" == "clang" && "${{ matrix.os }}" == ubuntu* ]]; then
+          echo "Clang on Linux setup"
+          sudo apt update
+          sudo apt install -y clang libc++-dev libc++abi-dev
+          echo "stdlib-flag=-stdlib=libc++" >> "$GITHUB_OUTPUT"
+        else
+          echo "stdlib-flag=" >> "$GITHUB_OUTPUT"
+        fi
+    - name: Clang setup
+      if: 
     - name: Configure
       run: >
         cmake
@@ -70,7 +72,7 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -DCMAKE_CXX_FLAGS="${{ matrix.stdlib_flag }}"
+        -DCMAKE_CXX_FLAGS="${{ steps.setup.outputs.stdlib-flag }}"
         -DBT_BUILD_TESTS=1
     - name: Build
       run: cmake --build ${{ steps.setup.outputs.build-output-dir }} --config ${{ matrix.build_type }}
