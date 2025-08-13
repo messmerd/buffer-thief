@@ -63,6 +63,17 @@ public:
 	}
 };
 
+
+template<typename Tag, auto member, typename MemberType = decltype((member))>
+class StaticMemberAccessor
+{
+public:
+	friend constexpr auto get(Tag) -> MemberType
+	{
+		return static_cast<MemberType>(member);
+	}
+};
+
 } // namespace bt::detail
 
 #endif // BUFFER_THIEF_MEMBER_ACCESSOR_H
