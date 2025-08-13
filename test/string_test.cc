@@ -92,7 +92,7 @@ void* operator new(std::size_t n) noexcept(false)
 void operator delete(void* p) noexcept
 {
 	std::free(p);
-	++deallocations_;
+	if (p) { ++deallocations_; }
 }
 
 ///////////////////////////////////////////////////
@@ -107,7 +107,7 @@ TEST_F(StringTest, StealCharEmpty)
 
 	auto s2 = generateString<char>(0);
 	EXPECT_EQ(bt::uses_large_buffer(s2), false);
-	EXPECT_EQ(bt::try_steal(std::move(s2)), nullptr);
+	EXPECT_EQ(bt::try_steal(s2), nullptr);
 	EXPECT_EQ(allocations_, 0);
 	EXPECT_EQ(deallocations_, 0);
 }
@@ -126,7 +126,7 @@ TEST_F(StringTest, StealCharSmall)
 	{
 		auto s2 = generateString<char>(3);
 		EXPECT_EQ(bt::uses_large_buffer(s2), false);
-		EXPECT_EQ(bt::try_steal(std::move(s2)), nullptr);
+		EXPECT_EQ(bt::try_steal(s2), nullptr);
 	}
 	EXPECT_EQ(allocations_, 0);
 	EXPECT_EQ(deallocations_, 0);
@@ -142,7 +142,7 @@ TEST_F(StringTest, StealCharSmallMax)
 
 	auto s2 = generateString<char>(bt::small_string_max_size<char>());
 	EXPECT_EQ(bt::uses_large_buffer(s2), false);
-	EXPECT_EQ(bt::try_steal(std::move(s2)), nullptr);
+	EXPECT_EQ(bt::try_steal(s2), nullptr);
 	EXPECT_EQ(allocations_, 0);
 	EXPECT_EQ(deallocations_, 0);
 }
@@ -157,7 +157,7 @@ TEST_F(StringTest, StealCharLongMin)
 
 	auto s2 = generateString<char>(bt::small_string_max_size<char>() + 1);
 	EXPECT_EQ(bt::uses_large_buffer(s2), true);
-	auto s3 = bt::try_steal(std::move(s2));
+	auto s3 = bt::try_steal(s2);
 	EXPECT_NE(s3, nullptr);
 	EXPECT_EQ(allocations_, 0);
 	EXPECT_EQ(deallocations_, 0);
@@ -176,7 +176,7 @@ TEST_F(StringTest, StealCharLongMin2)
 	{
 		auto s2 = generateString<char>(bt::small_string_max_size<char>() + 1);
 		EXPECT_EQ(bt::uses_large_buffer(s2), true);
-		auto s3 = bt::try_steal(std::move(s2));
+		auto s3 = bt::try_steal(s2);
 		EXPECT_NE(s3, nullptr);
 	}
 	EXPECT_EQ(allocations_, 0);

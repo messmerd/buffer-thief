@@ -48,7 +48,7 @@ constexpr auto small_string_max_size() noexcept -> std::size_t
 }
 
 template<typename CharT>
-BT_STRING_CONSTEXPR20 auto try_steal(std::basic_string<CharT>&& input) noexcept -> CharT*
+BT_STRING_CONSTEXPR20 auto try_steal(std::basic_string<CharT>& input) noexcept -> CharT*
 {
 	using Data = Target<CharT>::Data;
 	using Member = Target<CharT>::Member;
@@ -69,7 +69,7 @@ BT_STRING_CONSTEXPR20 auto try_steal(std::basic_string<CharT>&& input) noexcept 
 	data._Activate_SSO_buffer(); // just to be safe
 	data._Bx._Buf[0] = CharT();  // just to be safe
 
-	input.clear(); // ???
+	input.clear();
 
 	return ptr;
 }

@@ -16,6 +16,7 @@
 
 #undef BUFFER_THIEF_STRING_IMPLEMENTED
 #if !defined(BT_COPY_BUFFERS)
+#	include "private/string_libc++.hh"
 #	include "private/string_libstdc++.hh"
 #	include "private/string_msvc_stl.hh"
 #	if !defined(BUFFER_THIEF_STRING_IMPLEMENTED)
@@ -26,16 +27,16 @@
 namespace bt {
 
 // TODO:
-// - Better error messages for unsupported CharT types
 // - std::pmr::polymorphic_allocator support
+// - ASAN compatibility
 
 template<typename CharT>
-BT_STRING_CONSTEXPR23 auto try_steal(std::basic_string<CharT>&& input) noexcept -> std::unique_ptr<CharT[]>
+BT_STRING_CONSTEXPR23 auto try_steal(std::basic_string<CharT>& input) noexcept -> std::unique_ptr<CharT[]>
 {
 	static_assert(detail::SupportedChar<CharT>::value, "Unsupported character type");
 
 #if !defined(BT_COPY_BUFFERS)
-	return std::unique_ptr<CharT[]>{detail::try_steal(std::move(input))};
+	return std::unique_ptr<CharT[]>{detail::try_steal(input)};
 #else
 	return nullptr;
 #endif
@@ -47,7 +48,7 @@ BT_STRING_CONSTEXPR23 auto steal(std::basic_string<CharT>&& input) -> std::uniqu
 	static_assert(detail::SupportedChar<CharT>::value, "Unsupported character type");
 
 #if !defined(BT_COPY_BUFFERS)
-	if (auto buffer = detail::try_steal(std::move(input))) {
+	if (auto buffer = detail::try_steal(input)) {
 		return std::unique_ptr<CharT[]>{buffer};
 	}
 	else

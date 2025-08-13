@@ -72,7 +72,7 @@ template struct MemberAccessor<LocalPointerTarget<char16_t>, &std::u16string::_M
 template struct MemberAccessor<LocalPointerTarget<char32_t>, &std::u32string::_M_local_buf>;
 
 template<typename CharT>
-BT_STRING_CONSTEXPR20 auto try_steal(std::basic_string<CharT>&& input) noexcept -> CharT*
+BT_STRING_CONSTEXPR20 auto try_steal(std::basic_string<CharT>& input) noexcept -> CharT*
 {
 	CharT*& internal_ptr = get(PointerTarget<CharT>{}, input);
 	CharT* local_buffer_ptr = get(LocalPointerTarget<CharT>{}, input);
@@ -86,7 +86,7 @@ BT_STRING_CONSTEXPR20 auto try_steal(std::basic_string<CharT>&& input) noexcept 
 	internal_ptr = local_buffer_ptr; // convert to small string
 	internal_ptr[0] = CharT(); // just in case
 
-	input.clear(); // ???
+	input.clear();
 
 	return ptr;
 }
