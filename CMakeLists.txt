@@ -37,6 +37,7 @@ target_sources(
 		include/bufferthief/private/string_libc++.hh
 		include/bufferthief/private/string_libstdc++.hh
 		include/bufferthief/private/string_msvc_stl.hh
+		include/bufferthief/private/vector_libstdc++.hh
 		include/bufferthief/string.hh
 		include/bufferthief/vector.hh
 )
