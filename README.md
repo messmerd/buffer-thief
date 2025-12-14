@@ -14,7 +14,7 @@ Useful for transferring ownership of a string or vector across a C API (potentia
 template<typename CharT>
 auto try_steal(std::basic_string<CharT>& input) noexcept -> std::unique_ptr<CharT[]>;
 
-//! @returns copy of string contents, stealing internal buffer when possible and copying if not
+//! @returns string contents, stealing internal buffer when possible and copying if not
 template<typename CharT>
 auto steal(std::basic_string<CharT>&& input) -> std::unique_ptr<CharT[]>;
 
@@ -30,10 +30,72 @@ constexpr auto small_string_max_size() noexcept -> std::size_t;
 > `uses_large_buffer()` is constexpr in C++20, while `try_steal()` and `steal()` are `constexpr` in C++23.
 
 ### `std::vector<T>`
+```cpp
+// <bufferthief/vector.hh>
 
-Not implemented yet
+//! @returns internal buffer of the vector or nullptr if empty
+template<typename T>
+auto steal(std::vector<T>&& input) noexcept -> std::unique_ptr<T[]>;
+```
+> [!NOTE]
+> `steal()` is constexpr in C++23, and uses `noexcept(false)` when `BT_COPY_BUFFERS` is defined.
 
-## Example
+## Build
+
+Linux and macOS:
+
+```bash
+cmake -B build
+cmake --build build
+```
+
+Windows (MSVC):
+
+```bash
+cmake -B build
+cmake --build build --config Release
+```
+
+## Configuration options
+
+The following CMake options are available when configuring:
+
+```
+BT_COPY_BUFFERS (default: OFF)
+```
+When defined, all functions that would normally steal an internal buffer instead copy it - if the function's semantics allow. So `steal()` will always copy the internal buffer, and `try_steal()` will always return `nullptr`. Any other function which requires access to a container or string's implementation details is not provided.
+
+**Purpose:** Comparing performance of stealing buffers vs copying buffers; Allowing code using Buffer Thief to compile even when using an unsupported standard library implementation
+
+```
+BT_BUILD_TESTS (default: OFF, unless top-level project)
+```
+Builds Buffer Thief's unit tests.
+
+## Install
+
+After building, install to your system to begin using in projects:
+```bash
+cmake --install build
+```
+
+Or on Windows with MSVC:
+```bash
+cmake --install build --config Release
+```
+
+## CMake usage
+
+After installing, you can import Buffer Thief as a dependency in any C++ project that uses CMake:
+
+```cmake
+find_package(bufferthief CONFIG REQUIRED)
+
+add_executable(MyProject main.cpp)
+target_link_libraries(MyProject PRIVATE messmerd::bufferthief)
+```
+
+## C++ example
 
 ```cpp
 #include <bufferthief/string.hh>
