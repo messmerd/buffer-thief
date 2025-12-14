@@ -71,7 +71,7 @@ char* document_read_line(Document* context) {
 
 	// Steals the string's internal heap-allocated buffer if it has one,
 	// otherwise allocates a copy of the small string on the heap
-	return bt::steal(str).release();
+	return bt::steal(std::move(str)).release();
 }
 
 #else
@@ -104,4 +104,3 @@ void cstring_delete(char* p) { delete[] p; }
 - Buffer thief implementations for `std::vector`
 - Polymorphic allocator support
 - ASAN compatibility
-- R-value reference input parameters
