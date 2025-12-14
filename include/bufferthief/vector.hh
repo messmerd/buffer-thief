@@ -31,13 +31,13 @@ namespace bt {
 // - ASAN compatibility
 
 #if defined(BT_COPY_BUFFERS)
-#define BT_NOEXCEPT false
+#define BT_NOEXCEPT
 #else
-#define BT_NOEXCEPT true
+#define BT_NOEXCEPT noexcept
 #endif
 
 template<typename T>
-BT_VECTOR_CONSTEXPR23 auto steal(std::vector<T>&& input) noexcept(BT_NOEXCEPT) -> std::unique_ptr<T[]>
+BT_VECTOR_CONSTEXPR23 auto steal(std::vector<T>&& input) BT_NOEXCEPT -> std::unique_ptr<T[]>
 {
 #if !defined(BT_COPY_BUFFERS)
 	return std::unique_ptr<T[]>{detail::steal(input)};
