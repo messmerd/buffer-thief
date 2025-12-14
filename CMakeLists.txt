@@ -34,6 +34,7 @@ target_sources(
 		include/bufferthief/private/common_string.hh
 		include/bufferthief/private/common_vector.hh
 		include/bufferthief/private/member_accessor.hh
+		include/bufferthief/private/string_libc++.hh
 		include/bufferthief/private/string_libstdc++.hh
 		include/bufferthief/private/string_msvc_stl.hh
 		include/bufferthief/string.hh
