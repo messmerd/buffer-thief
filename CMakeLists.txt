@@ -15,8 +15,8 @@ option(
 
 option(
 	BT_BUILD_TESTS
-	"Build BufferThief unit tests"
-	OFF
+	"Build BufferThief unit tests. Default: ${PROJECT_IS_TOP_LEVEL}. Values: { ON, OFF }."
+	${PROJECT_IS_TOP_LEVEL}
 )
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -41,21 +41,19 @@ target_sources(
 )
 
 target_compile_features(bufferthief INTERFACE cxx_std_17)
-if(MSVC)
-	target_compile_options(bufferthief INTERFACE /Zc:__cplusplus)
-endif()
+
 if(BT_COPY_BUFFERS)
 	target_compile_definitions(bufferthief INTERFACE BT_COPY_BUFFERS)
 endif()
 
 install(
 	TARGETS bufferthief
-	EXPORT bufferthiefTargets
+	EXPORT bufferthief-targets
 	FILE_SET HEADERS
 )
 
 install(
-	EXPORT bufferthiefTargets
+	EXPORT bufferthief-targets
 	NAMESPACE messmerd::
 	DESTINATION lib/cmake/bufferthief
 )

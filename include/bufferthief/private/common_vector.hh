@@ -1,5 +1,5 @@
 /*
- * common_string.hh
+ * common_vector.hh
  *
  * Copyright (c) 2025 Dalton Messmer <messmer.dalton/at/gmail.com>
  * This file is part of the BufferThief library.
@@ -14,8 +14,10 @@
 #ifndef BUFFER_THIEF_COMMON_VECTOR_H
 #define BUFFER_THIEF_COMMON_VECTOR_H
 
-#if !defined(__cplusplus) || __cplusplus < 201703L
-#	error "BufferThief requires at least C++17. If using MSVC, be sure to set /Zc:__cplusplus"
+#if !defined(__cplusplus)
+	|| (defined(_MSVC_LANG) && _MSVC_LANG < 201703L)
+	|| (!defined(_MSVC_LANG) || __cplusplus < 201703L)
+#	error BufferThief requires at least C++17
 #endif
 
 #include <memory>

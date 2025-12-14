@@ -35,7 +35,7 @@ struct MemberTraits<Member Class::*>
 };
 
 /**
- * @brief Allows access to a private member whose type is public.
+ * @brief Allows access to a private non-static member whose type is public.
  *
  * If the target member exists in a nested class, the member pointers ordered
  * from the outermost member to the innermost (target) member must be provided.
@@ -63,7 +63,9 @@ public:
 	}
 };
 
-
+/**
+ * @brief Allows access to a private static member whose type is public.
+ */
 template<typename Tag, auto member, typename MemberType = decltype((member))>
 class StaticMemberAccessor
 {
